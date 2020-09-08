@@ -130,3 +130,4 @@ dmypy.json
 *.json
 *.json.formatted
 *.env
+chores/trello_keys

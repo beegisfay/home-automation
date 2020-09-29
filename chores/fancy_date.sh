@@ -1,8 +1,9 @@
-#!/bin/sh -vx
+#!/bin/sh
 
 # Make this a python function
 
-if [ $# -ne 1 ]; then
+if [ $# -ne 1 ]
+then
   echo "An input for the number of days out you want is required:"
   echo "SYNTAX: $0 <DAYS_OUT>"
   exit 1

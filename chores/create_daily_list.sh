@@ -18,7 +18,7 @@ for i in `echo "for (i=${FROM_DAY};i<=${TO_DAY};i++) i" | bc`
 do
     echo "Creating list for $i days out"
     ./fancy_date.sh $i; . ./new_list.env; python3 create_weekly_lists.py
-    echo "List created"
+    #echo "List created"
 done
 
 echo "All done"

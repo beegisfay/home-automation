@@ -12,9 +12,9 @@ def set_url(url_level):
    return the_url
 
 def set_api_tokens():
-   the_api_key = os.environ.get("TRELLO_KEY")
-   the_api_token = os.environ.get("TRELLO_TOKEN")
-   the_api_board = os.environ.get("TRELLO_BOARD")
+   the_api_key = os.popen("lpass show TRELLO_KEY --format=""%fv"" | tail -1").read()
+   the_api_token = os.popen("lpass show TRELLO_TOKEN --format=""%fv"" | tail -1").read()
+   the_api_board = os.popen("lpass show TRELLO_BOARD --format=""%fv"" | tail -1").read()
 
    return the_api_key, the_api_token, the_api_board
 

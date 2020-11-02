@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+verbose=True
 
 # This code sample uses the 'requests' library:
 # http://docs.python-requests.org
-import requests, os, json
+import requests, json, subprocess, os
 from trello import TrelloClient
 
 #init global scope variables
@@ -11,10 +12,16 @@ def set_url(url_level):
    the_url = "https://api.trello.com/1/" + url_level
    return the_url
 
+def get_api_secret(the_api_key):
+   the_api_secret = os.popen('lpass show ',the_api_key,' --format="%fv" | tail -1').read().strip()
+
+   return the_api_secret
+   
 def set_api_tokens():
-   the_api_key = os.popen("lpass show TRELLO_KEY --format=""%fv"" | tail -1").read()
-   the_api_token = os.popen("lpass show TRELLO_TOKEN --format=""%fv"" | tail -1").read()
-   the_api_board = os.popen("lpass show TRELLO_BOARD --format=""%fv"" | tail -1").read()
+   the_api_key = get_api_secret("TRELLO_KEY")
+   print("The API Key from LP is [" + the_api_key + "]")
+   the_api_token = get_api_secret("TRELLO_TOKEN")
+   the_api_board = get_api_secret("TRELLO_BOARD")
 
    return the_api_key, the_api_token, the_api_board
 
@@ -23,11 +30,11 @@ def set_list_title():
    return list_title
 
 def set_list_template():   
-   list_template = os.environ.get("TRELLO_DAILYTEMPLATE_LIST")
+   list_template = get_api_secret("TRELLO_DAILYTEMPLATE_LIST")
    return list_template
 
 def set_list_completed():   
-   list_completed = os.environ.get("TRELLO_COMPLETED_LIST")
+   list_completed = get_api_secret("TRELLO_COMPLETED_LIST")
    return list_completed
 
 # setup client
@@ -213,7 +220,6 @@ the_completed_list = get_list(my_board, the_completed_list_name)
 list_title = set_list_title()
 list_template = set_list_template()
 list_pos = set_list_position(the_completed_list)
-
 
 #list_pos = set_list_position()
 #list_title = set_list_title()

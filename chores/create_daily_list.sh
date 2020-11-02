@@ -8,7 +8,7 @@ then
     exit 1
 fi
 
-. ./trello_keys
+#. ./trello_keys
 
 FROM_DAY=$1
 TO_DAY=$2

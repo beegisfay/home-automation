@@ -1,11 +1,25 @@
 # This code sample uses the 'requests' library:
 # http://docs.python-requests.org
-import requests
-import os
+#!/usr/bin/env python3
 
-url = "https://api.trello.com/1/lists"
-board_pos = int(os.environ.get("DAYS_OUT")) + 2
+# This code sample uses the 'requests' library:
+# http://docs.python-requests.org
+import requests, os, json
+from trello import TrelloClient
 
+#init global scope variables
+
+def set_url(url_level):
+   the_url = "https://api.trello.com/1/" + url_level
+   return the_url
+
+def set_api_tokens():
+   the_api_key = os.popen("lpass show TRELLO_KEY --format=""%fv"" | tail -1").read()
+   the_api_token = os.popen("lpass show TRELLO_TOKEN --format=""%fv"" | tail -1").read()
+   the_api_board = os.popen("lpass show TRELLO_BOARD --format=""%fv"" | tail -1").read()
+
+   return the_api_key, the_api_token, the_api_board
+   
 query = {
    'key': os.environ.get("TRELLO_KEY"),
    'token': os.environ.get("TRELLO_TOKEN"),

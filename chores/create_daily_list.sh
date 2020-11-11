@@ -7,7 +7,7 @@ then
     echo "And MAX_DAYS_OUT is the Farthest Day Out for the last daily list"
     exit 1
 fi
-
+# Source key files to environment variables
 . ./trello_keys
 
 FROM_DAY=$1

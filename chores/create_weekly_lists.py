@@ -75,19 +75,19 @@ def get_list(the_lists, the_list_name):
       print(counter, this_list.id, this_list.name, this_list.pos)
       if the_list_name in this_list.name:
          print("List found!  Setting List ID to ", counter)
-         the_list = this_list[counter]
+         the_list = this_list
       
    return the_list
 
-# def get_list_position(the_list):
-#    the_list_pos = the_list.pos
+def get_list_position(the_list):
+   the_list_pos = the_list.pos
 
-#    return the_list_pos
+   return the_list_pos
    
-# def set_list_position(the_list):
-#    the_list_position = get_list_position(the_list)
-#    print("Setting list position for List '", the_list.name, "' to [", the_list.pos, "]")
-#    return the_list_position
+def set_list_position(the_list):
+   the_list_position = get_list_position(the_list)
+   print("Setting list position for List '", the_list.name, "' to [", the_list.pos, "]")
+   return the_list_position
 
 def find_values_from_key(key, json_object):
    print("Looking for key [" + key + "]")

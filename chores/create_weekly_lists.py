@@ -13,7 +13,10 @@ def set_url(url_level):
    return the_url
 
 def get_api_secret(the_api_key):
-   the_api_secret = os.popen('lpass show ',the_api_key,' --format="%fv" | tail -1').read().strip()
+   the_command='lpass show '+the_api_key+' --format="%fv" | tail -1'
+   print("Getting secret from last pass using following command:")
+   print("[" + the_command + "]")
+   the_api_secret = os.popen(the_command).read().strip()
 
    return the_api_secret
    
@@ -35,6 +38,7 @@ def set_list_template():
 
 def set_list_completed():   
    list_completed = get_api_secret("TRELLO_COMPLETED_LIST")
+   print("Set list_completed to [" + list_completed + "]")
    return list_completed
 
 # setup client
@@ -66,27 +70,24 @@ def set_board(the_client, the_board_str):
    the_board = all_boards[the_board_id]
    return the_board
 
-def get_list(the_board, the_list_name):
-   """
+def get_list(the_lists, the_list_name):
    for counter, this_list in enumerate(the_lists):
       print(counter, this_list.id, this_list.name, this_list.pos)
       if the_list_name in this_list.name:
          print("List found!  Setting List ID to ", counter)
          the_list = this_list[counter]
-   """
-   the_list = the_board.get_lists(the_list_name)
-   
+      
    return the_list
 
-def get_list_position(the_list):
-   the_list_pos = the_list.pos
+# def get_list_position(the_list):
+#    the_list_pos = the_list.pos
 
-   return the_list_pos
+#    return the_list_pos
    
-def set_list_position(the_list):
-   the_list_position = get_list_position(the_list)
-   print("Setting list position for List '", the_list.name, "' to [", the_list.pos, "]")
-   return the_list_position
+# def set_list_position(the_list):
+#    the_list_position = get_list_position(the_list)
+#    print("Setting list position for List '", the_list.name, "' to [", the_list.pos, "]")
+#    return the_list_position
 
 def find_values_from_key(key, json_object):
    print("Looking for key [" + key + "]")
@@ -215,7 +216,7 @@ list_all_boards(the_client)
 
 #Get Completed List
 the_completed_list_name = set_list_completed()
-the_completed_list = get_list(my_board, the_completed_list_name)
+the_completed_list = get_list(my_lists, the_completed_list_name)
 
 list_title = set_list_title()
 list_template = set_list_template()

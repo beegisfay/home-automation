@@ -8,6 +8,6 @@
 		}
 	],
 	"settings": {
-		"python.pythonPath": "c:\\Users\\bfay\\AppData\\Local\\Programs\\Python\\Python39\\pythonw.exe"
+		"python.pythonPath": "/usr/bin/python3"
 	}
 }

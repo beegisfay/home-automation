@@ -3,10 +3,40 @@ verbose=True
 
 # This code sample uses the 'requests' library:
 # http://docs.python-requests.org
-import requests, json, subprocess, os
+import requests, json, subprocess, os, argparse
 from trello import TrelloClient
 
 #init global scope variables
+
+def parse_args():
+   parser = argparse.ArgumentParser(description='Manage Trello Board')
+   parser.add_argument('-f', 
+      '--from_days_out', 
+      metavar='from_days_out',
+      default='0',
+      help='Beginning of range of days from today to build new daily lists')
+   parser.add_argument('-t', 
+      '--to_days_out', 
+      metavar='to_days_out',
+      default='0',
+      help='Ending of range of days from today to build new daily lists')
+   parser.add_argument('-a', 
+      '--auto_assign', 
+      metavar='auto_assign',
+      default='N',
+      help='Auto-assign daily/weekly/quarterly chores based on defined algorithm')
+   parser.add_argument('-d', 
+      '--day_of_week_chore_autoadd', 
+      metavar='day_of_week_chore_autoadd',
+      default='N',
+      help='Automatically add chores for each day of the week using defined logic')
+   parser.add_argument('-w', 
+      '--weekly_chore_autoadd', 
+      metavar='weekly_chore_autoadd',
+      default='N',
+      help='Automatically add weekly chores using defined logic')
+   args = parser.parse_args()
+   return args
 
 def set_url(url_level):
    the_url = "https://api.trello.com/1/" + url_level
@@ -42,10 +72,10 @@ def set_list_completed():
    return list_completed
 
 # setup client
-def setup_client():
+def setup_client(the_api_key, the_api_token):
    the_client = TrelloClient(
-      api_key=my_api_key,
-      token=my_api_token
+      api_key=the_api_key,
+      token=the_api_token
    )
 
    return the_client
@@ -105,26 +135,26 @@ def find_values_from_key(key, json_object):
       print("Um, not sure what type of object our json is...")
 
 # Get Lists
-def get_lists_url():
-   lists_url=set_url("board/" + my_api_board + "/lists")
+# def get_lists_url(the_api_key, the_api_token, the_api_board):
+#    lists_url=set_url("board/" + the_api_board + "/lists")
 
-   query = {
-      'key': my_api_key,
-      'token': my_api_token
-   }
-      #'idBoard': my_api_board,
-      #'lists': 'open'
+#    query = {
+#       'key': the_api_key,
+#       'token': the_api_token
+#    }
+#       #'idBoard': my_api_board,
+#       #'lists': 'open'
 
-   print(query)
+#    print(query)
 
-   response = requests.request(
-      "GET",
-      lists_url,
-      params=query
-   )
+#    response = requests.request(
+#       "GET",
+#       lists_url,
+#       params=query
+#    )
    
-   print(response.text)
-   return response
+#    print(response.text)
+#    return response
 
 def get_lists_api(the_board):
    print("Getting lists for '", the_board.name, "' board" )
@@ -167,6 +197,8 @@ def check_list_exists():
    return list_found
 
 # Create new list for a day of the week
+### Convert to use API
+###
 def create_dow_list():
    print("List [" + list_title + "] not found so proceeding with creation.") 
 
@@ -202,26 +234,38 @@ def create_dow_list():
 #import datetime
 #(datetime.datetime.utcnow() - datetime.datetime(1970,1,1)).days
 
+# Make these global for now
+# They will become part of a class in the future
+#my_api_key, my_api_token, my_api_board = None
+
+def setup_trello():
+   board_name_left="Pinchhitter"
+
+   my_api_key, my_api_token, my_api_board = set_api_tokens()
+
+   the_client = setup_client(my_api_key, my_api_token)
+   my_board = set_board(the_client, board_name_left)
+   my_lists = get_lists_api(my_board)
+
 #do something
-## Boardname begins with this phrase
-## Allows for some renaming as long as this word says
-board_name_left="Pinchhitter"
-my_api_key, my_api_token, my_api_board = set_api_tokens()
+def main():
+   args = parse_args()
 
-the_client = setup_client()
-my_board = set_board(the_client, board_name_left)
-my_lists = get_lists_api(my_board)
+   setup_trello()
 
-list_all_boards(the_client)
+   #list_all_boards(the_client)
 
-#Get Completed List
-the_completed_list_name = set_list_completed()
-the_completed_list = get_list(my_lists, the_completed_list_name)
+   #Get Completed List
+   #the_completed_list_name = set_list_completed()
+   #the_completed_list = get_list(my_lists, the_completed_list_name)
 
-list_title = set_list_title()
-list_template = set_list_template()
-list_pos = set_list_position(the_completed_list)
+   #list_title = set_list_title()
+   #list_template = set_list_template()
+   #list_pos = set_list_position(the_completed_list)
 
-#list_pos = set_list_position()
-#list_title = set_list_title()
-#list_template = set_list_template()
+   #list_pos = set_list_position()
+   #list_title = set_list_title()
+   #list_template = set_list_template()
+
+if __name__ == '__main__':
+   main()

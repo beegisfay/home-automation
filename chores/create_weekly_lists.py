@@ -13,12 +13,14 @@ def parse_args():
    parser.add_argument('-f', 
       '--from_days_out', 
       metavar='from_days_out',
-      default='0',
+      type=int,
+      default='-1',
       help='Beginning of range of days from today to build new daily lists')
    parser.add_argument('-t', 
       '--to_days_out', 
       metavar='to_days_out',
-      default='0',
+      type=int,
+      default='-1',
       help='Ending of range of days from today to build new daily lists')
    parser.add_argument('-a', 
       '--auto_assign', 
@@ -26,15 +28,21 @@ def parse_args():
       default='N',
       help='Auto-assign daily/weekly/quarterly chores based on defined algorithm')
    parser.add_argument('-d', 
-      '--day_of_week_chore_autoadd', 
-      metavar='day_of_week_chore_autoadd',
+      '--autoadd_day_of_week', 
+      metavar='autoadd_day_of_week',
       default='N',
       help='Automatically add chores for each day of the week using defined logic')
    parser.add_argument('-w', 
-      '--weekly_chore_autoadd', 
-      metavar='weekly_chore_autoadd',
+      '--autoadd_weekly', 
+      metavar='autoadd_weekly',
       default='N',
       help='Automatically add weekly chores using defined logic')
+   parser.add_argument('-k', 
+      '--key_file_save_path', 
+      metavar='key_file_save_path',
+      default='',
+      help='Path to save key file to for debugging')
+
    args = parser.parse_args()
    return args
 
@@ -62,14 +70,14 @@ def set_list_title():
    list_title = os.environ.get("FORMATTED_DATE")
    return list_title
 
-def set_list_template():   
-   list_template = get_api_secret("TRELLO_DAILYTEMPLATE_LIST")
-   return list_template
+def get_template_list_id():   
+   template_list_id = get_api_secret("TRELLO_DAILYTEMPLATE_LIST")
+   return template_list_id
 
-def set_list_completed():   
-   list_completed = get_api_secret("TRELLO_COMPLETED_LIST")
-   print("Set list_completed to [" + list_completed + "]")
-   return list_completed
+def get_completed_list_id():   
+   completed_list_id = get_api_secret("TRELLO_COMPLETED_LIST")
+   print("Set list_completed to [" + completed_list_id + "]")
+   return completed_list_id
 
 # setup client
 def setup_client(the_api_key, the_api_token):
@@ -89,7 +97,7 @@ def list_all_boards(client):
     for counter, board in enumerate(all_boards):
         print(counter, board.id, board.name)
 
-def set_board(the_client, the_board_str):
+def set_board_by_name(the_client, the_board_str):
    all_boards = the_client.list_boards()
    for counter, board in enumerate(all_boards):
         print(counter, board.id, board.name)
@@ -100,14 +108,17 @@ def set_board(the_client, the_board_str):
    the_board = all_boards[the_board_id]
    return the_board
 
-def get_list(the_lists, the_list_name):
+def get_board_by_id(the_client, the_board_id):
+   the_board = the_client.get_board(the_board_id)
+   return the_board
+
+def get_list_by_name(the_lists, the_list_name):
    for counter, this_list in enumerate(the_lists):
       print(counter, this_list.id, this_list.name, this_list.pos)
       if the_list_name in this_list.name:
-         print("List found!  Setting List ID to ", counter)
+         print("List found!  Setting List ID to ", this_list.id)
          the_list = this_list
-      
-   return the_list
+         return the_list
 
 def get_list_position(the_list):
    the_list_pos = the_list.pos
@@ -156,16 +167,16 @@ def find_values_from_key(key, json_object):
 #    print(response.text)
 #    return response
 
-def get_lists_api(the_board):
+def get_open_lists(the_board):
    print("Getting lists for '", the_board.name, "' board" )
-   all_lists_on_board = the_board.list_lists()
+   open_lists_on_board = the_board.open_lists()
 
-   for list in all_lists_on_board:
-      if not list.closed:
-         print("List ID: ", list.id, ": name [", list.name, ']: pos ', list.pos)
+   for list in open_lists_on_board:
+      print("List ID: ", list.id, ": name [", list.name, ']: pos ', list.pos)
 
-   return all_lists_on_board 
+   return open_lists_on_board 
 
+"""
 def check_list_exists():
    trello_lists = get_lists_url()
    #trello_lists.dumps()
@@ -195,7 +206,9 @@ def check_list_exists():
          list_found = True
 
    return list_found
+"""
 
+"""
 # Create new list for a day of the week
 ### Convert to use API
 ###
@@ -226,6 +239,7 @@ def create_dow_list():
    print(response.text)
    return new_list_id, new_list_pos
 #--
+"""
 
 #if not check_list_exists():
 #   new_list_id, new_list_pos = create_dow_list()
@@ -238,26 +252,50 @@ def create_dow_list():
 # They will become part of a class in the future
 #my_api_key, my_api_token, my_api_board = None
 
-def setup_trello():
-   board_name_left="Pinchhitter"
+def setup_trello(var_save_key_file):
+   #board_name_left="Pinchhitter"
 
    my_api_key, my_api_token, my_api_board = set_api_tokens()
 
    the_client = setup_client(my_api_key, my_api_token)
-   my_board = set_board(the_client, board_name_left)
-   my_lists = get_lists_api(my_board)
+   my_board = get_board_by_id(the_client, my_api_board)
+   my_lists = get_open_lists(my_board)
+
+   #Get Completed List
+   the_completed_list_id = get_completed_list_id()
+   the_completed_list = get_list_by_name(my_lists, the_completed_list_id)
+
+   return the_client, my_board, my_lists, the_completed_list
+   
 
 #do something
 def main():
    args = parse_args()
 
-   setup_trello()
+   trello_client, my_trello_board, my_trello_lists, my_trello_completed_list = setup_trello(args.key_file_save_path)
 
-   #list_all_boards(the_client)
+   # Print the lists for the sake of output for now
+   #list_all_boards(trello_client)
 
-   #Get Completed List
-   #the_completed_list_name = set_list_completed()
-   #the_completed_list = get_list(my_lists, the_completed_list_name)
+   print("Print arguments")
+   print("Days Out Args ["+args.from_days_out+"[] to ["+args.to_days_out"]")
+   print("Auto Assign ["+args.auto_assign+"]")
+   print("Auto Add DOW ["+args.autoadd_day_of_week+"]")
+   print("Auto Add Weekly ["+args.autoadd_weekly+"]")
+   
+   # If the input has days to create then call that process
+   if args.from_days_out >= 0 and args.to_days_out >= 0 and args.from_days_out <= args.to_days_out:
+      print("Calling [create_dow_list] for days out from "+args.from_days_out+" to "+args.to_days_out)
+      # create_dow_list
+
+   if args.auto_assign == 'Y':
+      print("auto_assign called")
+
+   if args.autoadd_day_of_week == 'Y':
+      print("autoadd_day_of_week called")
+
+   if args.autoadd_weekly == 'Y':
+      print("autoadd_weekly called")
 
    #list_title = set_list_title()
    #list_template = set_list_template()
